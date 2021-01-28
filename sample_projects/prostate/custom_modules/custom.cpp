@@ -375,100 +375,102 @@ void from_nodes_to_cell(Cell* pCell, Phenotype& phenotype, double dt)
 	std::vector<bool>* nodes = pCell->boolean_network.get_nodes();
 	int bn_index;
 
+	int start_phase_index;
+	int end_phase_index;
+	int apoptosis_index;
+
 	// For prostate model
 
 	// live model 
 	// translate apoptosis, proliferation and invasion values into agent-based model
 
-	if( pCell->phenotype.cycle.model().code == PhysiCell_constants::live_cells_cycle_model )
+	if( pCell->phenotype.cycle.model().code == PhysiCell_constants::live_cells_cycle_model ) 
 	{
-		int start_phase_index = phenotype.cycle.model().find_phase_index( PhysiCell_constants::live );
-		int end_phase_index = phenotype.cycle.model().find_phase_index( PhysiCell_constants::live );
-		int apoptosis_index = phenotype.death.find_death_model_index(PhysiCell_constants::apoptosis_death_model);
-		
-		// Update Apoptosis 
-		if(pCell->boolean_network.get_node_value("Apoptosis"))
-		{
-			pCell->start_death(apoptosis_index);
-			return;
-		}
-
-
-		// Update Adhesion
-		if( pCell->boolean_network.get_node_value("EMT"))
-		{
-			// reduce cell-cell adhesion 
-			// pCell->evolve_coef_sigmoid( 
-			// 	pCell->boolean_network.get_node_value("EMT"), phenotype.mechanics.cell_cell_adhesion_strength, dt 
-			// );
-
-			//phenotype.mechanics.cell_cell_adhesion_strength = PhysiCell::parameters.doubles("homotypic_adhesion_max") * theta 
-		}
-
-
-		// Update pReference_live_phenotype for proliferation node 
-		// double max_trans_rate = PhysiCell::parameters.doubles("max_transition_rate");
-		// double min_trans_rate = PhysiCell::parameters.doubles("min_transition_rate");
-
-		if (pCell->boolean_network.get_node_value("Proliferation")) 
-		{
-			// multiplier implementation
-			//pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) *= 2.5;
-			//std::cout << "Rate up! " << std::endl;
-
-
-			//switch implementation
-			double high_transition_rate = PhysiCell::parameters.doubles("base_transition_rate") * PhysiCell::parameters.doubles("transition_rate_multiplier");
-			pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) = high_transition_rate;
-		}
-		else 
-		{
-			//multiplier implementation 
-			//pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) *= 0.4;
-			//std::cout << "Rate down! " << std::endl;
-
-
-			//switch implementation 
-			pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) = PhysiCell::parameters.doubles("base_transition_rate");
-		}
-
-		 
-	
-		// if (pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) > max_trans_rate) 
-		// {
-		// 	 pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) = max_trans_rate;
-		// }
-		// else if (pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) < min_trans_rate)
-		// {
-		// 	 pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) = min_trans_rate;
-		// }
-
-
-		// Update Migration
-		if(pCell->boolean_network.get_node_value("Migration"))
-		{ 
-			pCell->phenotype.motility.is_motile = true;
-		 	pCell->phenotype.motility.migration_speed = PhysiCell::parameters.doubles("migration_speed");
-			pCell->phenotype.motility.migration_bias = PhysiCell::parameters.doubles("migration_bias");
-			pCell->phenotype.motility.persistence_time = PhysiCell::parameters.doubles("persistence");
-
-			// pCell->evolve_coef(pCell->boolean_network.get_node_value("Migration"),	phenotype.motility.migration_speed, dt 
-			// );
-			// pCell->phenotype.motility.migration_speed = PhysiCell::parameters.doubles("max_motility_speed") * migration_coeff
-		}
-		else 
-		{
-			pCell->phenotype.motility.is_motile = false;
-		}
-
-
-		// Update Invasion
-		if(pCell->boolean_network.get_node_value("Invasion"))
-		{
-			// nothing happens for now 
-		}
-
+		start_phase_index = phenotype.cycle.model().find_phase_index( PhysiCell_constants::live );
+		end_phase_index = phenotype.cycle.model().find_phase_index( PhysiCell_constants::live );
+		apoptosis_index = phenotype.death.find_death_model_index(PhysiCell_constants::apoptosis_death_model);
 	}
+
+	// basic Ki67 cycle model
+	else if( pCell->phenotype.cycle.model().code == PhysiCell_constants::basic_Ki67_cycle_model ) 
+	{
+		start_phase_index = phenotype.cycle.model().find_phase_index( PhysiCell_constants::Ki67_negative );
+		end_phase_index = phenotype.cycle.model().find_phase_index( PhysiCell_constants::Ki67_positive );
+		apoptosis_index = phenotype.death.find_death_model_index(PhysiCell_constants::apoptosis_death_model);
+		std::cout << pCell->phenotype.cycle.current_phase().name << " 0,1: " << pCell->phenotype.cycle.data.transition_rate(0, 1) << " / " << pCell->phenotype.cycle.current_phase().name << " 1,0: " << pCell->phenotype.cycle.data.transition_rate(1, 0) << "\n" << std::endl;
+	}
+
+
+	
+	// Update Apoptosis 
+	if(pCell->boolean_network.get_node_value("Apoptosis"))
+	{
+		pCell->start_death(apoptosis_index);
+		return;
+	}
+
+
+	// Update Adhesion
+	if( pCell->boolean_network.get_node_value("EMT"))
+	{
+		// reduce cell-cell adhesion 
+		// pCell->evolve_coef_sigmoid( 
+		// 	pCell->boolean_network.get_node_value("EMT"), phenotype.mechanics.cell_cell_adhesion_strength, dt 
+		// );
+
+		//phenotype.mechanics.cell_cell_adhesion_strength = PhysiCell::parameters.doubles("homotypic_adhesion_max") * theta 
+	}
+
+
+	// Update pReference_live_phenotype for proliferation node 
+	if (pCell->boolean_network.get_node_value("Proliferation")) 
+	{
+		// multiplier implementation
+		//pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) *= 2.5;
+		//std::cout << "Rate up! " << std::endl;
+
+
+		//switch implementation
+		//double high_transition_rate = PhysiCell::parameters.doubles("base_transition_rate") * PhysiCell::parameters.doubles("transition_rate_multiplier");
+		//pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) = high_transition_rate;
+	}
+	else 
+	{
+		//multiplier implementation 
+		//pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) *= 0.4;
+		//std::cout << "Rate down! " << std::endl;
+
+
+		//switch implementation 
+		//pCell->parameters.pReference_live_phenotype->cycle.data.transition_rate(start_phase_index,end_phase_index) = PhysiCell::parameters.doubles("base_transition_rate");
+	}
+
+		
+	// Update Migration
+	if(pCell->boolean_network.get_node_value("Migration"))
+	{ 
+		pCell->phenotype.motility.is_motile = true;
+		pCell->phenotype.motility.migration_speed = PhysiCell::parameters.doubles("migration_speed");
+		pCell->phenotype.motility.migration_bias = PhysiCell::parameters.doubles("migration_bias");
+		pCell->phenotype.motility.persistence_time = PhysiCell::parameters.doubles("persistence");
+
+		// pCell->evolve_coef(pCell->boolean_network.get_node_value("Migration"),	phenotype.motility.migration_speed, dt 
+		// );
+		// pCell->phenotype.motility.migration_speed = PhysiCell::parameters.doubles("max_motility_speed") * migration_coeff
+	}
+	else 
+	{
+		pCell->phenotype.motility.is_motile = false;
+	}
+
+
+	// Update Invasion
+	if(pCell->boolean_network.get_node_value("Invasion"))
+	{
+		// nothing happens for now 
+	}
+
+	
 
 
 	// if( phenotype.cycle.model().code == PhysiCell_constants::advanced_Ki67_cycle_model || phenotype.cycle.model().code == PhysiCell_constants::basic_Ki67_cycle_model )
