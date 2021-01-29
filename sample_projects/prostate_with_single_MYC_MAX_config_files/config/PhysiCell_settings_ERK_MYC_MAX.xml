@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*
+###############################################################################
+# If you use PhysiCell in your project, please cite PhysiCell and the version #
+# number, such as below:                                                      #
+#                                                                             #
+# We implemented and solved the model using PhysiCell (Version x.y.z) [1].    #
+#                                                                             #
+# [1] A Ghaffarizadeh, R Heiland, SH Friedman, SM Mumenthaler, and P Macklin, #
+#     PhysiCell: an Open Source Physics-Based Cell Simulator for Multicellu-  #
+#     lar Systems, PLoS Comput. Biol. 14(2): e1005991, 2018                   #
+#     DOI: 10.1371/journal.pcbi.1005991                                       #
+#                                                                             #
+# See VERSION.txt or call get_PhysiCell_version() to get the current version  #
+#     x.y.z. Call display_citations() to get detailed information on all cite-#
+#     able software used in your PhysiCell application.                       #
+#                                                                             #
+# Because PhysiCell extensively uses BioFVM, we suggest you also cite BioFVM  #
+#     as below:                                                               #
+#                                                                             #
+# We implemented and solved the model using PhysiCell (Version x.y.z) [1],    #
+# with BioFVM [2] to solve the transport equations.                           #
+#                                                                             #
+# [1] A Ghaffarizadeh, R Heiland, SH Friedman, SM Mumenthaler, and P Macklin, #
+#     PhysiCell: an Open Source Physics-Based Cell Simulator for Multicellu-  #
+#     lar Systems, PLoS Comput. Biol. 14(2): e1005991, 2018                   #
+#     DOI: 10.1371/journal.pcbi.1005991                                       #
+#                                                                             #
+# [2] A Ghaffarizadeh, SH Friedman, and P Macklin, BioFVM: an efficient para- #
+#     llelized diffusive transport solver for 3-D biological simulations,     #
+#     Bioinformatics 32(8): 1256-8, 2016. DOI: 10.1093/bioinformatics/btv730  #
+#                                                                             #
+###############################################################################
+#                                                                             #
+# BSD 3-Clause License (see https://opensource.org/licenses/BSD-3-Clause)     #
+#                                                                             #
+# Copyright (c) 2015-2018, Paul Macklin and the PhysiCell Project             #
+# All rights reserved.                                                        #
+#                                                                             #
+# Redistribution and use in source and binary forms, with or without          #
+# modification, are permitted provided that the following conditions are met: #
+#                                                                             #
+# 1. Redistributions of source code must retain the above copyright notice,   #
+# this list of conditions and the following disclaimer.                       #
+#                                                                             #
+# 2. Redistributions in binary form must reproduce the above copyright        #
+# notice, this list of conditions and the following disclaimer in the         #
+# documentation and/or other materials provided with the distribution.        #
+#                                                                             #
+# 3. Neither the name of the copyright holder nor the names of its            #
+# contributors may be used to endorse or promote products derived from this   #
+# software without specific prior written permission.                         #
+#                                                                             #
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" #
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE   #
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE  #
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE   #
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR         #
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF        #
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS    #
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN     #
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)     #
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE  #
+# POSSIBILITY OF SUCH DAMAGE.                                                 #
+#                                                                             #
+###############################################################################
+*/
+--> 
+
+<!--
+<user_details />
+-->
+
+<PhysiCell_settings version="devel-version">
+	<domain>
+		<x_min>-500</x_min>
+		<x_max>500</x_max>
+		<y_min>-500</y_min>
+		<y_max>500</y_max>
+		<z_min>-500</z_min>
+		<z_max>500</z_max>
+		<dx>15</dx>
+		<dy>15</dy>
+		<dz>15</dz>
+		<use_2D>false</use_2D>
+	</domain>
+	
+	<overall>
+		<max_time units="min">1440</max_time>
+		<time_units>min</time_units>
+		<space_units>micron</space_units>
+
+		<dt_diffusion units="min">0.02</dt_diffusion>
+		<dt_mechanics units="min">0.1</dt_mechanics>
+		<dt_phenotype units="min">2</dt_phenotype>	
+	</overall>
+	
+	<parallel>
+		<omp_num_threads>4</omp_num_threads>
+	</parallel> 
+	
+	<save>
+		<folder>output</folder>
+
+		<full_data>
+			<interval units="min">30</interval>
+			<enable>true</enable>
+		</full_data>
+		
+		<SVG>
+			<interval units="min">30</interval>
+			<enable>false</enable>
+		</SVG>
+		
+		<legacy_data>
+			<enable>false</enable>
+		</legacy_data>
+	</save>
+	
+	<options>
+		<legacy_random_points_on_sphere_in_divide>false</legacy_random_points_on_sphere_in_divide>
+	</options>	
+
+	<microenvironment_setup>
+		<variable name="oxygen" units="mmHg" ID="0">
+			<physical_parameter_set>
+				<diffusion_coefficient units="micron^2/min">100000.0</diffusion_coefficient>
+				<decay_rate units="1/min">.1</decay_rate> 
+			</physical_parameter_set>
+			<initial_condition units="mmHg">38.0</initial_condition>
+			<Dirichlet_boundary_condition units="mmHg" enabled="true">38.0</Dirichlet_boundary_condition>
+		</variable>
+
+		<!-- <variable name="ERKi" units="mmol" ID="1">
+			<physical_parameter_set>
+				<diffusion_coefficient units="micron^2/min">1200.0</diffusion_coefficient>
+				<decay_rate units="1/min">.0275</decay_rate> 
+			</physical_parameter_set>
+			<initial_condition units="mmol">0.0</initial_condition>
+			<Dirichlet_boundary_condition units="mmol" enabled="false">0.0</Dirichlet_boundary_condition>
+		</variable> -->
+
+		<variable name="MYC_MAXi" units="mmol" ID="1">
+			<physical_parameter_set>
+				<diffusion_coefficient units="micron^2/min">1200.0</diffusion_coefficient>
+				<decay_rate units="1/min">.0275</decay_rate> 
+			</physical_parameter_set>
+			<initial_condition units="mmol">0.0</initial_condition>
+			<Dirichlet_boundary_condition units="mmol" enabled="false">0.0</Dirichlet_boundary_condition>
+		</variable>
+		
+
+		<options>
+			<calculate_gradients>true</calculate_gradients>
+			<track_internalized_substrates_in_each_agent>true</track_internalized_substrates_in_each_agent>
+			<!-- not yet supported --> 
+			<initial_condition type="matlab" enabled="false">
+				<filename>./config/initial.mat</filename>
+			</initial_condition>
+			<!-- not yet supported --> 
+			<dirichlet_nodes type="matlab" enabled="false">
+				<filename>./config/dirichlet.mat</filename>
+			</dirichlet_nodes>
+		</options>
+	</microenvironment_setup>		
+	
+	<cell_definitions>
+		<cell_definition name="default" ID="0">
+			<phenotype>
+				<cycle code="5" name="live_cells_cycle_model">  
+					<phase_transition_rates units="1/min">
+						<rate start_index="0" end_index="0" fixed_duration="false">0.00072‬</rate>
+					</phase_transition_rates>
+				</cycle>
+				
+				<death>  
+					<model code="100" name="apoptosis"> 
+						<rate units="1/min">5.31667e-05</rate>
+						<transition_rates units="1/min">
+							<rate start_index="0" end_index="1" fixed_duration="true">0.00193798</rate>
+						</transition_rates>
+						<parameters>
+							<unlysed_fluid_change_rate units="1/min">0.05</unlysed_fluid_change_rate>
+							<lysed_fluid_change_rate units="1/min">0</lysed_fluid_change_rate>
+							<cytoplasmic_biomass_change_rate units="1/min">1.66667e-02</cytoplasmic_biomass_change_rate>
+							<nuclear_biomass_change_rate units="1/min">5.83333e-03</nuclear_biomass_change_rate>
+							<calcification_rate units="1/min">0</calcification_rate>
+							<relative_rupture_volume units="dimensionless">2.0</relative_rupture_volume>
+						</parameters>
+					</model> 
+
+					<!-- <model code="101" name="necrosis">
+						<rate units="1/min">0.0</rate>
+						<transition_rates units="1/min">
+							<rate start_index="0" end_index="1" fixed_duration="false">9e9</rate>
+							<rate start_index="1" end_index="2" fixed_duration="true">1.15741e-5</rate>
+						</transition_rates>
+						<parameters>
+							<unlysed_fluid_change_rate units="1/min">0.05</unlysed_fluid_change_rate>
+							<lysed_fluid_change_rate units="1/min">0</lysed_fluid_change_rate>
+							<cytoplasmic_biomass_change_rate units="1/min">1.66667e-02</cytoplasmic_biomass_change_rate>
+							<nuclear_biomass_change_rate units="1/min">5.83333e-03</nuclear_biomass_change_rate>
+							<calcification_rate units="1/min">0</calcification_rate>
+							<relative_rupture_volume units="dimensionless">2.0</relative_rupture_volume>
+						</parameters>
+					</model>  -->
+				</death>	
+
+				<motility>
+					<speed units="micron/min">1</speed>
+					<persistence_time units="min">1</persistence_time>
+					<migration_bias units="dimensionless">0</migration_bias>
+
+					<options>
+						<enabled>false</enabled>
+						<use_2D>false</use_2D>
+					</options>
+				</motility>				
+
+				<secretion>
+					<substrate name="oxygen">
+						<secretion_rate units="1/min">0</secretion_rate>
+						<secretion_target units="substrate density">38</secretion_target>
+						<uptake_rate units="1/min">10</uptake_rate>
+						<net_export_rate units="total substrate/min">0</net_export_rate> 
+					</substrate> 
+<!-- 
+					<substrate name="ERKi">
+						<secretion_rate units="1/min">0</secretion_rate>
+						<secretion_target units="substrate density">1</secretion_target>
+						<uptake_rate units="1/min">0.0025</uptake_rate>
+						<net_export_rate units="total substrate/min">0</net_export_rate> 
+					</substrate>  -->
+					
+					<substrate name="MYC_MAXi">
+						<secretion_rate units="1/min">0</secretion_rate>
+						<secretion_target units="substrate density">1</secretion_target>
+						<uptake_rate units="1/min">0.0025</uptake_rate>
+						<net_export_rate units="total substrate/min">0</net_export_rate> 
+					</substrate> 
+
+				</secretion>
+
+				<molecular />	
+			</phenotype>
+			<custom_data>
+				<next_physiboss_run units="dimensionless">10.</next_physiboss_run>
+				<!-- <erki_concentration units="dimensionless">0</erki_concentration>
+				<erki_node units="dimensionless">0</erki_node>-->
+				<myc_maxi_concentration units="dimensionless">0</myc_maxi_concentration>
+				<myc_maxi_node units="dimensionless">0</myc_maxi_node>
+			</custom_data>
+		
+
+		<!-- Definition of drug insensitive type, inherits from the default cell definition above -->
+		</cell_definition>
+		<cell_definition name="drug_insensitive" ID="1" parent_type="default">
+		</cell_definition>
+	
+	</cell_definitions>
+
+	<user_parameters>
+		<random_seed type="int" units="dimensionless">0</random_seed> 
+		<!-- motility parameters --> 
+		<migration_bias type='double' units="" description="change value of migration bias for cells with migration node active">0</migration_bias>
+		<migration_speed type='double' units="" description="change value of migration speed for cells with migration node active">0.7</migration_speed>
+		<persistence type="double" units="" description="change value of persistence for cells with migration node active">50</persistence>
+
+		<!-- proliferation multiplier implementation -->
+		<!-- <max_transition_rate type="double" units="">0.01</max_transition_rate>
+		<min_transition_rate type="double" units="">0.00072</min_transition_rate> -->
+
+		<!-- proliferation switch implementation -->
+		<high_transition_rate type="double" units="">0.01</high_transition_rate>
+		<low_transition_rate type="double" units="">0.00072</low_transition_rate>
+
+		
+		<!-- motility parameters, just what the people of france used-->
+		<!-- <max_motility_speed type="double" units="">1.5</max_motility_speed>
+		<motility_coeff type="double" units= "">0.1</motility_coeff>
+
+		<motility_amplitude_min type="double" units=""> 0.1 </motility_amplitude_min>
+    	<motility_amplitude_max type="double" units=""> 0.5 </motility_amplitude_max>
+    	<mode_motility type="int" units=""> 1 </mode_motility> -->
+		
+		<!-- adhesion and repulsion parameters-->
+		<!-- <homotypic_adhesion_min type="double" units=""> 0.2 </homotypic_adhesion_min>
+		<homotypic_adhesion_max type="double" units=""> 0.8 </homotypic_adhesion_max>
+		<heterotypic_adhesion_min type="double" units=""> 0.2 </heterotypic_adhesion_min>
+		<heterotypic_adhesion_max type="double" units=""> 0.8 </heterotypic_adhesion_max>
+		<cell_basement_membrane_repulsion type="double" units="">10.0</cell_basement_membrane_repulsion>
+		<cell_basement_membrane_adhesion type="double" units="">1.70577155519015</cell_basement_membrane_adhesion>
+		<cell_cell_repulsion type="int" units=""> 10 </cell_cell_repulsion> -->
+		
+		<!-- oxygen parameters-->
+		<!-- <oxygen_necrotic type="int" units=""> 4 </oxygen_necrotic> -->
+		<oxygen_critical type="int" units=""> 3 </oxygen_critical>
+		<oxygen_no_proliferation type="double" units=""> 6.5 </oxygen_no_proliferation>
+		<oxygen_hypoxic type="int" units=""> 15 </oxygen_hypoxic>
+		<oxygen_reference type="double" units=""> 0.7 </oxygen_reference>
+		<oxygen_saturation type="int" units=""> 38 </oxygen_saturation>
+
+		<!-- additional parameters in ECM_motility example -->
+		<!-- <cell_radius type="double" units=""> 8.413 </cell_radius>
+		<nucleus_radius type="double" units=""> 5.052 </nucleus_radius>
+		<fluid_fraction type="double" units=""> 0.75 </fluid_fraction>
+		<solid_nuclear type="int" units=""> 135 </solid_nuclear>
+		<solid_cytoplasmic type="int" units=""> 486 </solid_cytoplasmic>
+		<cytoplasmic_nuclear_fraction type="double" units=""> 3.6 </cytoplasmic_nuclear_fraction>
+		<initial_uptake_rate type="int" units=""> 20 </initial_uptake_rate>
+		<protein_threshold type="int" units=""> 1 </protein_threshold>
+		<phenotype_number type="int" units=""> 0 </phenotype_number>
+		<secretion_rate type="int" units=""> 0 </secretion_rate>
+		<init_cells_filename type="string" units="">./config/init.txt</init_cells_filename>
+		<init_ecm_filename type="string" units="">./config/ecm.txt</init_ecm_filename>
+		<x_threshold type="double" units="dimensionless">1.</x_threshold>
+		<membrane_shape type="string" units=""> sphere </membrane_shape>	
+		<membrane_length type="double" units=""> 10 </membrane_length>
+
+		<ecm_adhesion_min type="int" units=""> 1 </ecm_adhesion_min>
+		<ecm_adhesion_max type="int" units=""> 2 </ecm_adhesion_max>
+		<cell_ecm_repulsion type="double" units=""> 10.0 </cell_ecm_repulsion>
+		<ecm_degradation type="int" units=""> 5 </ecm_degradation>
+		<max_interaction_factor type="double" units=""> 1.3 </max_interaction_factor>
+
+		<contact_cell_ECM_threshold type="double" units=""> 0.1 </contact_cell_ECM_threshold>
+		<contact_cell_cell_threshold type="double" units=""> 1 </contact_cell_cell_threshold> 
+
+		<polarity_coefficient type="double" units="">0.5</polarity_coefficient>
+		<persistence type="double" units="">0.5</persistence> -->
+		<bnd_file type="string" units="">./config/boolean_network/LNCaP_mut_RNA_EGF_MYC_MAX.bnd</bnd_file>
+		<cfg_file type="string" units="">./config/boolean_network/LNCaP_mut_RNA_EGF_MYC_MAX.cfg</cfg_file>
+		<maboss_time_step type="double" units="dimensionless">10.</maboss_time_step>
+		<init_cells_filename type="string" units="">./config/init.txt</init_cells_filename>
+
+		<!-- <erki_uptake_rate type="double" units="">0.0025</erki_uptake_rate> 
+		<erki_secretion_rate type="double" units="fg/cell/min">0.1</erki_secretion_rate> 
+		
+		<duration_add_erki type="int" units="min">8000</duration_add_erki>
+		<time_remove_erki type="int" units="min">8000</time_remove_erki>
+		<time_add_erki type="int" units="min">0</time_add_erki>
+		<erki_threshold type="double" units="dimensionless">0.14</erki_threshold>
+		<concentration_erki type="double" units="ng/mL"> 0.5 </concentration_erki>-->
+
+		<myc_maxi_uptake_rate type="double" units="">0.0025</myc_maxi_uptake_rate> 
+		<myc_maxi_secretion_rate type="double" units="fg/cell/min">0.1</myc_maxi_secretion_rate> 
+		
+		<duration_add_myc_maxi type="int" units="min">8000</duration_add_myc_maxi>
+		<time_remove_myc_maxi type="int" units="min">8000</time_remove_myc_maxi>
+		<time_add_myc_maxi type="int" units="min">0</time_add_myc_maxi>
+		<myc_maxi_threshold type="double" units="dimensionless">0.14</myc_maxi_threshold>
+		<concentration_myc_maxi type="double" units="ng/mL"> 0.5 </concentration_myc_maxi> 
+
+		<proportion_drug_sensitive type="double" units="dimensionless">0.4</proportion_drug_sensitive>
+
+
+		<membrane_length type="int" units=""> 470 </membrane_length>
+	</user_parameters>
+</PhysiCell_settings>
